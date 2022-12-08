@@ -157,7 +157,7 @@ struct cpufreq_driver {
     int    (*setpolicy)(struct cpufreq_policy *policy);
     int    (*update)(int cpuid, struct cpufreq_policy *policy);
     int    (*target)(struct cpufreq_policy *policy,
-                     unsigned int target_freq,
+                     uint64_t target_freq,
                      unsigned int relation);
     unsigned int    (*get)(unsigned int cpu);
     int    (*exit)(struct cpufreq_policy *policy);

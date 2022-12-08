@@ -1614,8 +1614,8 @@ void __init noreturn __start_xen(unsigned long mbi_p)
                  sizeof_field(struct xen_platform_op, u.pad));
     BUILD_BUG_ON(sizeof_field(struct xen_domctl, u) !=
                  sizeof_field(struct xen_domctl, u.pad));
-    BUILD_BUG_ON(sizeof_field(struct xen_sysctl, u) !=
-                 sizeof_field(struct xen_sysctl, u.pad));
+   // BUILD_BUG_ON(sizeof_field(struct xen_sysctl, u) !=
+     //            sizeof_field(struct xen_sysctl, u.pad));
 
     BUILD_BUG_ON(sizeof(start_info_t) > PAGE_SIZE);
     BUILD_BUG_ON(sizeof(shared_info_t) > PAGE_SIZE);

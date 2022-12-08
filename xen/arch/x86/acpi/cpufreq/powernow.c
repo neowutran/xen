@@ -80,7 +80,7 @@ static int cf_check powernow_cpufreq_update(
 
 static int cf_check powernow_cpufreq_target(
     struct cpufreq_policy *policy,
-    unsigned int target_freq, unsigned int relation)
+    uint64_t target_freq, unsigned int relation)
 {
     struct acpi_cpufreq_data *data = cpufreq_drv_data[policy->cpu];
     struct processor_performance *perf;
