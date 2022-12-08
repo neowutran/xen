@@ -207,9 +207,9 @@ void cpufreq_statistic_reset(unsigned int cpuid)
 int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
                                     struct cpufreq_frequency_table *table)
 {
-    unsigned int min_freq = ~0;
-    unsigned int max_freq = 0;
-    unsigned int second_max_freq = 0;
+    uint64_t min_freq = ~0;
+    uint64_t max_freq = 0;
+    uint64_t second_max_freq = 0;
     unsigned int i;
 
     for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
@@ -231,7 +231,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
     if (second_max_freq == 0)
         second_max_freq = max_freq;
     if (cpufreq_verbose)
-        printk("max_freq: %u    second_max_freq: %u\n",
+        printk("max_freq: %lu    second_max_freq: %lu\n",
                max_freq, second_max_freq);
 
     policy->min = policy->cpuinfo.min_freq = min_freq;
@@ -355,7 +355,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
  *********************************************************************/
 
 int __cpufreq_driver_target(struct cpufreq_policy *policy,
-                            unsigned int target_freq,
+                            uint64_t target_freq,
                             unsigned int relation)
 {
     int retval = -EINVAL;

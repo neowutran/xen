@@ -306,18 +306,18 @@ struct xen_get_cpufreq_para {
     /* for all governors */
     /* OUT variable */
     XEN_GUEST_HANDLE_64(uint32) affected_cpus;
-    XEN_GUEST_HANDLE_64(uint32) scaling_available_frequencies;
+    XEN_GUEST_HANDLE_64(uint64) scaling_available_frequencies;
     XEN_GUEST_HANDLE_64(char)   scaling_available_governors;
     char scaling_driver[CPUFREQ_NAME_LEN];
 
-    uint32_t cpuinfo_cur_freq;
-    uint32_t cpuinfo_max_freq;
-    uint32_t cpuinfo_min_freq;
-    uint32_t scaling_cur_freq;
+    uint64_t cpuinfo_cur_freq;
+    uint64_t cpuinfo_max_freq;
+    uint64_t cpuinfo_min_freq;
+    uint64_t scaling_cur_freq;
 
     char scaling_governor[CPUFREQ_NAME_LEN];
-    uint32_t scaling_max_freq;
-    uint32_t scaling_min_freq;
+    uint64_t scaling_max_freq;
+    uint64_t scaling_min_freq;
 
     /* for specific governor */
     union {

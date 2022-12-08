@@ -35,10 +35,10 @@ struct acpi_cpufreq_data {
 extern struct acpi_cpufreq_data *cpufreq_drv_data[NR_CPUS];
 
 struct cpufreq_cpuinfo {
-    unsigned int        max_freq;
-    unsigned int        second_max_freq;    /* P1 if Turbo Mode is on */
-    unsigned int        min_freq;
-    unsigned int        transition_latency; /* in 10^(-9) s = nanoseconds */
+    uint64_t       max_freq;
+    uint64_t       second_max_freq;    /* P1 if Turbo Mode is on */
+    uint64_t       min_freq;
+    uint64_t       transition_latency; /* in 10^(-9) s = nanoseconds */
 };
 
 struct perf_limits {
@@ -122,7 +122,7 @@ extern struct cpufreq_governor *__find_governor(const char *governor);
 
 /* pass a target to the cpufreq driver */
 extern int __cpufreq_driver_target(struct cpufreq_policy *policy,
-                                   unsigned int target_freq,
+                                   uint64_t target_freq,
                                    unsigned int relation);
 
 #define GOV_GETAVG     1

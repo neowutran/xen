@@ -192,7 +192,7 @@ static int get_cpufreq_para(struct xen_sysctl_pm_op *op)
     struct cpufreq_policy *policy;
     uint32_t gov_num = 0;
     uint32_t *affected_cpus;
-    uint32_t *scaling_available_frequencies;
+    uint64_t *scaling_available_frequencies;
     char     *scaling_available_governors;
     struct list_head *pos;
     uint32_t cpu, i, j = 0;
@@ -228,7 +228,7 @@ static int get_cpufreq_para(struct xen_sysctl_pm_op *op)
         return ret;
 
     if ( !(scaling_available_frequencies =
-           xzalloc_array(uint32_t, op->u.get_para.freq_num)) )
+           xzalloc_array(uint64_t, op->u.get_para.freq_num)) )
         return -ENOMEM;
     for ( i = 0; i < op->u.get_para.freq_num; i++ )
         scaling_available_frequencies[i] =

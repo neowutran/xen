@@ -371,7 +371,7 @@ static unsigned int check_freqs(const cpumask_t *mask, unsigned int freq,
 
 static int cf_check acpi_cpufreq_target(
     struct cpufreq_policy *policy,
-    unsigned int target_freq, unsigned int relation)
+    uint64_t target_freq, unsigned int relation)
 {
     struct acpi_cpufreq_data *data = cpufreq_drv_data[policy->cpu];
     struct processor_performance *perf;
