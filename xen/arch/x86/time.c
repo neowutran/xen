@@ -280,13 +280,13 @@ void set_time_scale(struct time_scale *ts, u64 ticks_per_sec)
 static char *freq_string(u64 freq)
 {
     static char s[20];
-    unsigned int x, y;
+    uint64_t x, y;
 
     if ( do_div(freq, 1000) > 500 )
         ++freq;
-    y = (unsigned int)do_div(freq, 1000);
-    x = (unsigned int)freq;
-    snprintf(s, sizeof(s), "%u.%03uMHz", x, y);
+    y = (uint64_t)do_div(freq, 1000);
+    x = (uint64_t)freq;
+    snprintf(s, sizeof(s), "%lu.%03luMHz", x, y);
     return s;
 }
 
