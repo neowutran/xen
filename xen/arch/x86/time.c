@@ -321,9 +321,9 @@ static uint32_t __init read_pt_and_tsc(uint64_t *tsc,
 static uint64_t __init calibrate_tsc(const struct platform_timesource *pts)
 {
     uint64_t start, end, elapsed;
-    unsigned int count = read_pt_and_tsc(&start, pts);
-    unsigned int target = CALIBRATE_VALUE(pts->frequency), actual;
-    unsigned int mask = (uint32_t)~0 >> (32 - pts->counter_bits);
+    uint64_t count = read_pt_and_tsc(&start, pts);
+    uint64_t target = CALIBRATE_VALUE(pts->frequency), actual;
+    uint64_t mask = (uint64_t)~0 >> (64 - pts->counter_bits);
 
     while ( ((pts->read_counter() - count) & mask) < target )
         continue;
