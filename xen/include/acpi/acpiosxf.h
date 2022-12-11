@@ -66,18 +66,18 @@ void acpi_os_unmap_memory(void __iomem * logical_address, acpi_size size);
 /*
  * Platform and hardware-independent I/O interfaces
  */
-acpi_status acpi_os_read_port(acpi_io_address address, u32 * value, u32 width);
+acpi_status acpi_os_read_port(acpi_io_address address, u64 * value, u32 width);
 
-acpi_status acpi_os_write_port(acpi_io_address address, u32 value, u32 width);
+acpi_status acpi_os_write_port(acpi_io_address address, u64 value, u32 width);
 
 /*
  * Platform and hardware-independent physical memory interfaces
  */
 acpi_status
-acpi_os_read_memory(acpi_physical_address address, u32 * value, u32 width);
+acpi_os_read_memory(acpi_physical_address address, u64 * value, u32 width);
 
 acpi_status
-acpi_os_write_memory(acpi_physical_address address, u32 value, u32 width);
+acpi_os_write_memory(acpi_physical_address address, u64 value, u32 width);
 
 /*
  * Debug print routines
