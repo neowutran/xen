@@ -414,13 +414,13 @@ static int cf_check acpi_cpufreq_target(
     case SYSTEM_INTEL_MSR_CAPABLE:
         cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
         cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
-        cmd.val = (u32) perf->states[next_perf_state].control;
+        cmd.val = (u64) perf->states[next_perf_state].control;
         break;
     case SYSTEM_IO_CAPABLE:
         cmd.type = SYSTEM_IO_CAPABLE;
         cmd.addr.io.port = perf->control_register.address;
         cmd.addr.io.bit_width = perf->control_register.bit_width;
-        cmd.val = (u32) perf->states[next_perf_state].control;
+        cmd.val = (u64) perf->states[next_perf_state].control;
         break;
     default:
         return -ENODEV;
