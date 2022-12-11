@@ -357,7 +357,7 @@ static void cf_check feature_detect(void *info)
 static unsigned int check_freqs(const cpumask_t *mask, unsigned int freq,
                                 struct acpi_cpufreq_data *data)
 {
-    unsigned int cur_freq;
+    uint64_t cur_freq;
     unsigned int i;
 
     for (i=0; i<100; i++) {
@@ -495,13 +495,13 @@ acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
     }
 }
 
-static int cf_check acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+static uint64_t cf_check acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
     unsigned int i;
     unsigned int valid_states = 0;
     unsigned int cpu = policy->cpu;
     struct acpi_cpufreq_data *data;
-    unsigned int result = 0;
+    uint64_t result = 0;
     struct cpuinfo_x86 *c = &cpu_data[policy->cpu];
     struct processor_performance *perf;
 

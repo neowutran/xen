@@ -278,7 +278,7 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 
 int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
                                    struct cpufreq_frequency_table *table,
-                                   unsigned int target_freq,
+                                   uint64_t target_freq,
                                    unsigned int relation,
                                    unsigned int *index)
 {
@@ -362,7 +362,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 
     if (cpu_online(policy->cpu) && cpufreq_driver.target)
     {
-        unsigned int prev_freq = policy->cur;
+        uint64_t prev_freq = policy->cur;
 
         retval = alternative_call(cpufreq_driver.target,
                                   policy, target_freq, relation);
