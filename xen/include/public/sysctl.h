@@ -300,7 +300,7 @@ struct xen_ondemand {
 struct xen_get_cpufreq_para {
     /* IN/OUT variable */
     uint32_t cpu_num;
-    uint32_t freq_num;
+    uint64_t freq_num;
     uint32_t gov_num;
 
     /* for all governors */
