@@ -26,10 +26,10 @@
 static unsigned int __read_mostly userspace_cmdline_freq;
 static DEFINE_PER_CPU(unsigned int, cpu_set_freq);
 
-static int cf_check cpufreq_governor_userspace(
+static uint64_t cf_check cpufreq_governor_userspace(
     struct cpufreq_policy *policy, unsigned int event)
 {
-    int ret = 0;
+    uint64_t ret = 0;
     unsigned int cpu;
 
     if (unlikely(!policy) || 
@@ -131,10 +131,10 @@ __initcall(cpufreq_gov_userspace_init);
 /*
  * cpufreq performance governor
  */
-static int cf_check cpufreq_governor_performance(
+static uint64_t cf_check cpufreq_governor_performance(
     struct cpufreq_policy *policy, unsigned int event)
 {
-    int ret = 0;
+    uint64_t ret = 0;
 
     if (!policy)
         return -EINVAL;
@@ -170,10 +170,10 @@ __initcall(cpufreq_gov_performance_init);
 /*
  * cpufreq powersave governor
  */
-static int cf_check cpufreq_governor_powersave(
+static uint64_t cf_check cpufreq_governor_powersave(
     struct cpufreq_policy *policy, unsigned int event)
 {
-    int ret = 0;
+    uint64_t ret = 0;
 
     if (!policy)
         return -EINVAL;

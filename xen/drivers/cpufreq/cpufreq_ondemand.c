@@ -215,7 +215,7 @@ static void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
     kill_timer(&per_cpu(dbs_timer, dbs_info->cpu));
 }
 
-static int cf_check cpufreq_governor_dbs(
+static uint64_t cf_check cpufreq_governor_dbs(
     struct cpufreq_policy *policy, unsigned int event)
 {
     unsigned int cpu = policy->cpu;

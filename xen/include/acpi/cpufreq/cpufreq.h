@@ -102,7 +102,7 @@ struct cpufreq_freqs {
 
 struct cpufreq_governor {
     char    name[CPUFREQ_NAME_LEN];
-    int     (*governor)(struct cpufreq_policy *policy,
+    uint64_t     (*governor)(struct cpufreq_policy *policy,
                         unsigned int event);
     bool_t  (*handle_option)(const char *name, const char *value);
     struct list_head governor_list;
@@ -152,7 +152,7 @@ __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event)
 
 struct cpufreq_driver {
     const char *name;
-    int    (*init)(struct cpufreq_policy *policy);
+    uint64_t    (*init)(struct cpufreq_policy *policy);
     int    (*verify)(struct cpufreq_policy *policy);
     int    (*setpolicy)(struct cpufreq_policy *policy);
     int    (*update)(int cpuid, struct cpufreq_policy *policy);
@@ -206,7 +206,7 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 
 int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
                    struct cpufreq_frequency_table *table,
-                   unsigned int target_freq,
+                   uint64_t target_freq,
                    unsigned int relation,
                    unsigned int *index);
 

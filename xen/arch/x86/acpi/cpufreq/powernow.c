@@ -198,13 +198,13 @@ static int cf_check powernow_cpufreq_verify(struct cpufreq_policy *policy)
     return cpufreq_frequency_table_verify(policy, data->freq_table);
 }
 
-static int cf_check powernow_cpufreq_cpu_init(struct cpufreq_policy *policy)
+static uint64_t cf_check powernow_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
     unsigned int i;
     unsigned int valid_states = 0;
     unsigned int cpu = policy->cpu;
     struct acpi_cpufreq_data *data;
-    unsigned int result = 0;
+    uint64_t result = 0;
     struct processor_performance *perf;
     struct amd_cpu_data info;
     struct cpuinfo_x86 *c = &cpu_data[policy->cpu];
