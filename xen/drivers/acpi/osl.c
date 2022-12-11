@@ -177,6 +177,7 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u64 * value, u32 width)
 	if (!value)
 		value = &dummy;
 
+	u64 tmpval;
 	switch (width) {
 	case 8:
 		*(u8 *) value = readb(virt_addr);
@@ -188,7 +189,7 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u64 * value, u32 width)
 		*(u32 *) value = readl(virt_addr);
 		break;
 	case 64:
-		u64 tmpval = (u64) readl(virt_addr);
+		tmpval = (u64) readl(virt_addr);
 		tmpval = ((u64)readl(virt_addr+4)) <<32;
 		*(u64 *) value = tmpval;
 		break;
@@ -209,6 +210,7 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u64 value, u32 width)
 	if (!virt_addr)
 		return AE_ERROR;
 
+	u32 tmpval;
 	switch (width) {
 	case 8:
 		writeb(value, virt_addr);
@@ -220,7 +222,7 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u64 value, u32 width)
 		writel(value, virt_addr);
 		break;
 	case 64:
-		u32 tmpval = (u32) value;
+		tmpval = (u32) value;
 		writel(tmpval, virt_addr);
 		tmpval = (u32)(value >> 32);
 		writel(tmpval, virt_addr+4);
