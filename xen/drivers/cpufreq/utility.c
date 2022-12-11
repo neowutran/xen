@@ -213,7 +213,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
     unsigned int i;
 
     for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-        unsigned int freq = table[i].frequency;
+        uint64_t freq = table[i].frequency;
         if (freq == CPUFREQ_ENTRY_INVALID)
             continue;
         if (freq < min_freq)
@@ -222,7 +222,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
             max_freq = freq;
     }
     for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-        unsigned int freq = table[i].frequency;
+        uint64_t freq = table[i].frequency;
         if (freq == CPUFREQ_ENTRY_INVALID || freq == max_freq)
             continue;
         if (freq > second_max_freq)
@@ -258,7 +258,7 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
                                  policy->cpuinfo.max_freq);
 
     for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-        unsigned int freq = table[i].frequency;
+        uint64_t freq = table[i].frequency;
         if (freq == CPUFREQ_ENTRY_INVALID)
             continue;
         if ((freq >= policy->min) && (freq <= policy->max))
@@ -305,7 +305,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
         return -EINVAL;
 
     for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-        unsigned int freq = table[i].frequency;
+        uint64_t freq = table[i].frequency;
         if (freq == CPUFREQ_ENTRY_INVALID)
             continue;
         if ((freq < policy->min) || (freq > policy->max))
@@ -376,7 +376,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 int cpufreq_driver_getavg(unsigned int cpu, unsigned int flag)
 {
     struct cpufreq_policy *policy;
-    int freq_avg;
+    uint64_t freq_avg;
 
     if (!cpu_online(cpu) || !(policy = per_cpu(cpufreq_cpu_policy, cpu)))
         return 0;
