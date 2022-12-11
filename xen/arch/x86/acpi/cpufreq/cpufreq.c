@@ -67,7 +67,7 @@ static int check_est_cpu(unsigned int cpuid)
     return 1;
 }
 
-static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
+static uint64_t extract_io(u32 value, struct acpi_cpufreq_data *data)
 {
     struct processor_performance *perf;
     int i;
@@ -81,7 +81,7 @@ static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
     return 0;
 }
 
-static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+static uint64_t extract_msr(u32 msr, struct acpi_cpufreq_data *data)
 {
     int i;
     struct processor_performance *perf;
@@ -96,7 +96,7 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
     return data->freq_table[0].frequency;
 }
 
-static unsigned extract_freq(u32 val, struct acpi_cpufreq_data *data)
+static uint64_t extract_freq(u32 val, struct acpi_cpufreq_data *data)
 {
     switch (data->arch_cpu_flags) {
     case SYSTEM_INTEL_MSR_CAPABLE:
@@ -320,7 +320,7 @@ unsigned int get_measured_perf(unsigned int cpu, unsigned int flag)
     return policy->cpuinfo.max_freq * perf_percent / 100;
 }
 
-static unsigned int cf_check get_cur_freq_on_cpu(unsigned int cpu)
+static uint64_t cf_check get_cur_freq_on_cpu(unsigned int cpu)
 {
     struct cpufreq_policy *policy;
     struct acpi_cpufreq_data *data;
