@@ -300,7 +300,7 @@ int apei_read(u64 *val, struct acpi_generic_address *reg)
 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
 		return apei_read_mem(paddr, val, reg->bit_width);
 	case ACPI_ADR_SPACE_SYSTEM_IO:
-		return acpi_os_read_port(paddr, (u32 *)val, reg->bit_width);
+		return acpi_os_read_port(paddr, (u64 *)val, reg->bit_width);
 	default:
 		return -EINVAL;
 	}
