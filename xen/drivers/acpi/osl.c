@@ -222,7 +222,7 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u64 value, u32 width)
 	case 64:
 		u32 tmpval = (u32) value;
 		writel(tmpval, virt_addr);
-		tmpval = (u32)(val >> 32);
+		tmpval = (u32)(value >> 32);
 		writel(tmpval, virt_addr+4);
 		break;
 	default:

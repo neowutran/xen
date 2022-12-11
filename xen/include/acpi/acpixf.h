@@ -100,9 +100,9 @@ acpi_status acpi_get_parent(acpi_handle object, acpi_handle * out_handle);
 /*
  * Hardware (ACPI device) interfaces
  */
-acpi_status acpi_get_register(u32 register_id, u32 * return_value);
+acpi_status acpi_get_register(u32 register_id, u64 * return_value);
 
-acpi_status acpi_set_register(u32 register_id, u32 value);
+acpi_status acpi_set_register(u32 register_id, u64 value);
 
 acpi_status
 acpi_set_firmware_waking_vector(acpi_physical_address physical_address);

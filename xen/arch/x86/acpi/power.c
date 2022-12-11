@@ -389,7 +389,7 @@ int acpi_enter_sleep(struct xenpf_enter_acpi_sleep *sleep)
 
 static int acpi_get_wake_status(void)
 {
-    uint32_t val;
+    uint64_t val;
     acpi_status status;
 
     if ( acpi_sinfo.sleep_extended )

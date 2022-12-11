@@ -536,7 +536,7 @@ static void acpi_idle_do_entry(struct acpi_processor_cx *cx)
 
 static int acpi_idle_bm_check(void)
 {
-    u32 bm_status = 0;
+    u64 bm_status = 0;
 
     acpi_get_register(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
     if ( bm_status )

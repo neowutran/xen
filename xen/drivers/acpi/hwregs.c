@@ -91,9 +91,9 @@ acpi_hw_get_bit_register_info(u32 register_id)
  *
  ******************************************************************************/
 
-acpi_status acpi_get_register(u32 register_id, u32 * return_value)
+acpi_status acpi_get_register(u32 register_id, u64 * return_value)
 {
-	u32 register_value = 0;
+	u64 register_value = 0;
 	struct acpi_bit_register_info *bit_reg_info;
 	acpi_status status;
 
@@ -142,9 +142,9 @@ acpi_status acpi_get_register(u32 register_id, u32 * return_value)
  * DESCRIPTION: ACPI Bit Register write function.
  *
  ******************************************************************************/
-acpi_status acpi_set_register(u32 register_id, u32 value)
+acpi_status acpi_set_register(u32 register_id, u64 value)
 {
-	u32 register_value = 0;
+	u64 register_value = 0;
 	struct acpi_bit_register_info *bit_reg_info;
 	acpi_status status;
 
@@ -288,10 +288,10 @@ acpi_status acpi_set_register(u32 register_id, u32 value)
  *
  ******************************************************************************/
 acpi_status
-acpi_hw_register_read(u32 register_id, u32 * return_value)
+acpi_hw_register_read(u32 register_id, u64 * return_value)
 {
-	u32 value1 = 0;
-	u32 value2 = 0;
+	u64 value1 = 0;
+	u64 value2 = 0;
 	acpi_status status;
 
 	ACPI_FUNCTION_TRACE(hw_register_read);
@@ -359,9 +359,10 @@ acpi_hw_register_read(u32 register_id, u32 * return_value)
 		break;
 
 	case ACPI_REGISTER_SMI_COMMAND_BLOCK:	/* 8-bit access */
-
+		u64 tmpval = 0;
 		status =
-		    acpi_os_read_port(acpi_gbl_FADT.smi_command, &value1, 8);
+		    acpi_os_read_port(acpi_gbl_FADT.smi_command, &tmpval, 8);
+		value1=(u32)tmpval;
 		break;
 
 	case ACPI_REGISTER_SLEEP_STATUS:
@@ -413,10 +414,10 @@ acpi_hw_register_read(u32 register_id, u32 * return_value)
  *
  ******************************************************************************/
 
-acpi_status acpi_hw_register_write(u32 register_id, u32 value)
+acpi_status acpi_hw_register_write(u32 register_id, u64 value)
 {
 	acpi_status status;
-	u32 read_value;
+	u64 read_value;
 
 	ACPI_FUNCTION_TRACE(hw_register_write);
 
@@ -564,7 +565,7 @@ acpi_status acpi_hw_register_write(u32 register_id, u32 value)
  ******************************************************************************/
 
 acpi_status
-acpi_hw_low_level_read(u32 width, u32 * value, struct acpi_generic_address *reg)
+acpi_hw_low_level_read(u32 width, u64 * value, struct acpi_generic_address *reg)
 {
 	u64 address;
 	acpi_status status;
@@ -634,7 +635,7 @@ acpi_hw_low_level_read(u32 width, u32 * value, struct acpi_generic_address *reg)
  ******************************************************************************/
 
 acpi_status
-acpi_hw_low_level_write(u32 width, u32 value, struct acpi_generic_address * reg)
+acpi_hw_low_level_write(u32 width, u64 value, struct acpi_generic_address * reg)
 {
 	u64 address;
 	acpi_status status;
