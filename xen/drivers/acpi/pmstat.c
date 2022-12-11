@@ -348,7 +348,7 @@ static int set_cpufreq_para(struct xen_sysctl_pm_op *op)
 
     case SCALING_SETSPEED:
     {
-        unsigned int freq =op->u.set_para.ctrl_value;
+        uint64_t freq =op->u.set_para.ctrl_value;
 
         if ( !strncasecmp(policy->governor->name,
                           "userspace", CPUFREQ_NAME_LEN) )
