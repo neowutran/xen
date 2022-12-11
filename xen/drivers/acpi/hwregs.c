@@ -291,6 +291,7 @@ acpi_status
 acpi_hw_register_read(u32 register_id, u64 * return_value)
 {
 	u64 value1 = 0;
+	u64 tmpval = 0;
 	u64 value2 = 0;
 	acpi_status status;
 
@@ -359,7 +360,6 @@ acpi_hw_register_read(u32 register_id, u64 * return_value)
 		break;
 
 	case ACPI_REGISTER_SMI_COMMAND_BLOCK:	/* 8-bit access */
-		u64 tmpval = 0;
 		status =
 		    acpi_os_read_port(acpi_gbl_FADT.smi_command, &tmpval, 8);
 		value1=(u32)tmpval;
