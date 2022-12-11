@@ -120,9 +120,9 @@ void acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
 		vunmap((void *)((unsigned long)virt & PAGE_MASK));
 }
 
-acpi_status acpi_os_read_port(acpi_io_address port, u32 * value, u32 width)
+acpi_status acpi_os_read_port(acpi_io_address port, u64 * value, u32 width)
 {
-	u32 dummy;
+	u64 dummy;
 
 	if (!value)
 		value = &dummy;
@@ -134,6 +134,10 @@ acpi_status acpi_os_read_port(acpi_io_address port, u32 * value, u32 width)
 		*(u16 *) value = inw(port);
 	} else if (width <= 32) {
 		*(u32 *) value = inl(port);
+	} else if (width <= 64) {
+		u64 tmpval = (u64)inl(port);
+		tmpval |= ((u64)inl(port+4)) << 32;
+		*(u64 *) value = tmpval;
 	} else {
 		BUG();
 	}
@@ -141,7 +145,7 @@ acpi_status acpi_os_read_port(acpi_io_address port, u32 * value, u32 width)
 	return AE_OK;
 }
 
-acpi_status acpi_os_write_port(acpi_io_address port, u32 value, u32 width)
+acpi_status acpi_os_write_port(acpi_io_address port, u64 value, u32 width)
 {
 	if (width <= 8) {
 		outb(value, port);
@@ -149,6 +153,11 @@ acpi_status acpi_os_write_port(acpi_io_address port, u32 value, u32 width)
 		outw(value, port);
 	} else if (width <= 32) {
 		outl(value, port);
+	} else if (width <= 64) {
+		u32 tmpval = (u32) value;
+		outl(tmpval, port);
+		tmpval = (u32) (value >> 32);
+		outl(tmpval, port+4);
 	} else {
 		BUG();
 	}
@@ -157,10 +166,10 @@ acpi_status acpi_os_write_port(acpi_io_address port, u32 value, u32 width)
 }
 
 acpi_status
-acpi_os_read_memory(acpi_physical_address phys_addr, u32 * value, u32 width)
+acpi_os_read_memory(acpi_physical_address phys_addr, u64 * value, u32 width)
 {
-	u32 dummy;
-	void __iomem *virt_addr = acpi_os_map_memory(phys_addr, width >> 3);
+	u64 dummy;
+	void __iomem *virt_addr = acpi_os_map_memory(phys_addr, width >> 7);
 
 	if (!virt_addr)
 		return AE_ERROR;
@@ -178,19 +187,24 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u32 * value, u32 width)
 	case 32:
 		*(u32 *) value = readl(virt_addr);
 		break;
+	case 64:
+		u64 tmpval = (u64) readl(virt_addr);
+		tmpval = ((u64)readl(virt_addr+4)) <<32;
+		*(u64 *) value = tmpval;
+		break;
 	default:
 		BUG();
 	}
 
-	acpi_os_unmap_memory(virt_addr, width >> 3);
+	acpi_os_unmap_memory(virt_addr, width >> 7);
 
 	return AE_OK;
 }
 
 acpi_status
-acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
+acpi_os_write_memory(acpi_physical_address phys_addr, u64 value, u32 width)
 {
-	void __iomem *virt_addr = acpi_os_map_memory(phys_addr, width >> 3);
+	void __iomem *virt_addr = acpi_os_map_memory(phys_addr, width >> 7);
 
 	if (!virt_addr)
 		return AE_ERROR;
@@ -205,11 +219,17 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
 	case 32:
 		writel(value, virt_addr);
 		break;
+	case 64:
+		u32 tmpval = (u32) value;
+		writel(tmpval, virt_addr);
+		tmpval = (u32)(val >> 32);
+		writel(tmpval, virt_addr+4);
+		break;
 	default:
 		BUG();
 	}
 
-	acpi_os_unmap_memory(virt_addr, width >> 3);
+	acpi_os_unmap_memory(virt_addr, width >> 7);
 
 	return AE_OK;
 }

@@ -67,7 +67,7 @@ static int check_est_cpu(unsigned int cpuid)
     return 1;
 }
 
-static uint64_t extract_io(u32 value, struct acpi_cpufreq_data *data)
+static uint64_t extract_io(u64 value, struct acpi_cpufreq_data *data)
 {
     struct processor_performance *perf;
     int i;
@@ -81,7 +81,7 @@ static uint64_t extract_io(u32 value, struct acpi_cpufreq_data *data)
     return 0;
 }
 
-static uint64_t extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+static uint64_t extract_msr(u64 msr, struct acpi_cpufreq_data *data)
 {
     int i;
     struct processor_performance *perf;
@@ -96,7 +96,7 @@ static uint64_t extract_msr(u32 msr, struct acpi_cpufreq_data *data)
     return data->freq_table[0].frequency;
 }
 
-static uint64_t extract_freq(u32 val, struct acpi_cpufreq_data *data)
+static uint64_t extract_freq(u64 val, struct acpi_cpufreq_data *data)
 {
     switch (data->arch_cpu_flags) {
     case SYSTEM_INTEL_MSR_CAPABLE:
@@ -126,7 +126,7 @@ struct drv_cmd {
     unsigned int type;
     const cpumask_t *mask;
     drv_addr_union addr;
-    u32 val;
+    u64 val;
 };
 
 static void cf_check do_drv_read(void *drvcmd)
@@ -192,7 +192,7 @@ static void drv_write(struct drv_cmd *cmd)
         on_selected_cpus(cmd->mask, do_drv_write, cmd, 1);
 }
 
-static u32 get_cur_val(const cpumask_t *mask)
+static u64 get_cur_val(const cpumask_t *mask)
 {
     struct cpufreq_policy *policy;
     struct processor_performance *perf;
