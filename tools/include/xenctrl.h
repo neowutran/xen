@@ -1907,24 +1907,24 @@ typedef struct xen_ondemand xc_ondemand_t;
 struct xc_get_cpufreq_para {
     /* IN/OUT variable */
     uint32_t cpu_num;
-    uint32_t freq_num;
+    uint64_t freq_num;
     uint32_t gov_num;
 
     /* for all governors */
     /* OUT variable */
     uint32_t *affected_cpus;
-    uint32_t *scaling_available_frequencies;
+    uint64_t *scaling_available_frequencies;
     char     *scaling_available_governors;
     char scaling_driver[CPUFREQ_NAME_LEN];
 
-    uint32_t cpuinfo_cur_freq;
-    uint32_t cpuinfo_max_freq;
-    uint32_t cpuinfo_min_freq;
-    uint32_t scaling_cur_freq;
+    uint64_t cpuinfo_cur_freq;
+    uint64_t cpuinfo_max_freq;
+    uint64_t cpuinfo_min_freq;
+    uint64_t scaling_cur_freq;
 
     char scaling_governor[CPUFREQ_NAME_LEN];
-    uint32_t scaling_max_freq;
-    uint32_t scaling_min_freq;
+    uint64_t scaling_max_freq;
+    uint64_t scaling_min_freq;
 
     /* for specific governor */
     union {
@@ -1935,12 +1935,12 @@ struct xc_get_cpufreq_para {
     int32_t turbo_enabled;
 };
 
-int xc_get_cpufreq_para(xc_interface *xch, int cpuid,
+uint64_t xc_get_cpufreq_para(xc_interface *xch, int cpuid,
                         struct xc_get_cpufreq_para *user_para);
 int xc_set_cpufreq_gov(xc_interface *xch, int cpuid, char *govname);
 int xc_set_cpufreq_para(xc_interface *xch, int cpuid,
-                        int ctrl_type, int ctrl_value);
-int xc_get_cpufreq_avgfreq(xc_interface *xch, int cpuid, int *avg_freq);
+                        int ctrl_type, uint64_t ctrl_value);
+uint64_t xc_get_cpufreq_avgfreq(xc_interface *xch, int cpuid, uint64_t *avg_freq);
 
 int xc_set_sched_opt_smt(xc_interface *xch, uint32_t value);
 

@@ -197,7 +197,7 @@ int xc_pm_reset_cxstat(xc_interface *xch, int cpuid)
  * 1. Get PM parameter
  * 2. Provide user PM control
  */
-int xc_get_cpufreq_para(xc_interface *xch, int cpuid,
+uint64_t xc_get_cpufreq_para(xc_interface *xch, int cpuid,
                         struct xc_get_cpufreq_para *user_para)
 {
     DECLARE_SYSCTL;
@@ -208,7 +208,7 @@ int xc_get_cpufreq_para(xc_interface *xch, int cpuid,
 			 user_para->cpu_num * sizeof(uint32_t), XC_HYPERCALL_BUFFER_BOUNCE_BOTH);
     DECLARE_NAMED_HYPERCALL_BOUNCE(scaling_available_frequencies,
 			 user_para->scaling_available_frequencies,
-			 user_para->freq_num * sizeof(uint32_t), XC_HYPERCALL_BUFFER_BOUNCE_BOTH);
+			 user_para->freq_num * sizeof(uint64_t), XC_HYPERCALL_BUFFER_BOUNCE_BOTH);
     DECLARE_NAMED_HYPERCALL_BOUNCE(scaling_available_governors,
 			 user_para->scaling_available_governors,
 			 user_para->gov_num * CPUFREQ_NAME_LEN * sizeof(char), XC_HYPERCALL_BUFFER_BOUNCE_BOTH);
@@ -311,8 +311,8 @@ int xc_set_cpufreq_gov(xc_interface *xch, int cpuid, char *govname)
     return xc_sysctl(xch, &sysctl);
 }
 
-int xc_set_cpufreq_para(xc_interface *xch, int cpuid, 
-                        int ctrl_type, int ctrl_value)
+uint64_t xc_set_cpufreq_para(xc_interface *xch, int cpuid, 
+                        int ctrl_type, uint64_t ctrl_value)
 {
     DECLARE_SYSCTL;
 
@@ -330,7 +330,7 @@ int xc_set_cpufreq_para(xc_interface *xch, int cpuid,
     return xc_sysctl(xch, &sysctl);
 }
 
-int xc_get_cpufreq_avgfreq(xc_interface *xch, int cpuid, int *avg_freq)
+uint64_t xc_get_cpufreq_avgfreq(xc_interface *xch, int cpuid, uint64_t *avg_freq)
 {
     int ret = 0;
     DECLARE_SYSCTL;
