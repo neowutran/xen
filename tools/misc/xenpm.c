@@ -318,7 +318,7 @@ static int get_pxstat_by_cpuid(xc_interface *xc_handle, int cpuid, struct xc_px_
 }
 
 /* show cpu actual average freq information on CPU cpuid */
-static int get_avgfreq_by_cpuid(xc_interface *xc_handle, int cpuid, int *avgfreq)
+static int get_avgfreq_by_cpuid(xc_interface *xc_handle, int cpuid, uint64_t *avgfreq)
 {
     int ret = 0;
 
@@ -720,7 +720,7 @@ static void print_cpufreq_para(int cpuid, struct xc_get_cpufreq_para *p_cpufreq)
         printf(" %d", p_cpufreq->affected_cpus[i]);
     printf("\n");
 
-    printf("cpuinfo frequency    : max [%u] min [%u] cur [%u]\n",
+    printf("cpuinfo frequency    : max [%lu] min [%lu] cur [%lu]\n",
            p_cpufreq->cpuinfo_max_freq,
            p_cpufreq->cpuinfo_min_freq,
            p_cpufreq->cpuinfo_cur_freq);
@@ -754,12 +754,12 @@ static void print_cpufreq_para(int cpuid, struct xc_get_cpufreq_para *p_cpufreq)
     for ( i = 0; i < p_cpufreq->freq_num; i++ )
         if ( p_cpufreq->scaling_available_frequencies[i] ==
              p_cpufreq->scaling_cur_freq )
-            printf(" *%d", p_cpufreq->scaling_available_frequencies[i]);
+            printf(" *%ld", p_cpufreq->scaling_available_frequencies[i]);
         else
-            printf(" %d", p_cpufreq->scaling_available_frequencies[i]);
+            printf(" %ld", p_cpufreq->scaling_available_frequencies[i]);
     printf("\n");
 
-    printf("scaling frequency    : max [%u] min [%u] cur [%u]\n",
+    printf("scaling frequency    : max [%lu] min [%lu] cur [%lu]\n",
            p_cpufreq->scaling_max_freq,
            p_cpufreq->scaling_min_freq,
            p_cpufreq->scaling_cur_freq);
