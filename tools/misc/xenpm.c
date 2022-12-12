@@ -318,9 +318,9 @@ static int get_pxstat_by_cpuid(xc_interface *xc_handle, int cpuid, struct xc_px_
 }
 
 /* show cpu actual average freq information on CPU cpuid */
-static int get_avgfreq_by_cpuid(xc_interface *xc_handle, int cpuid, uint64_t *avgfreq)
+static uint64_t get_avgfreq_by_cpuid(xc_interface *xc_handle, int cpuid, uint64_t *avgfreq)
 {
-    int ret = 0;
+    uint64_t ret = 0;
 
     ret = xc_get_cpufreq_avgfreq(xc_handle, cpuid, avgfreq);
     if ( ret )
@@ -367,14 +367,14 @@ void pxstat_func(int argc, char *argv[])
 static int show_cpufreq_by_cpuid(xc_interface *xc_handle, int cpuid)
 {
     int ret = 0;
-    int average_cpufreq;
+    uint64_t average_cpufreq;
 
     ret = get_avgfreq_by_cpuid(xc_handle, cpuid, &average_cpufreq);
     if ( ret )
         return ret;
 
     printf("cpu id               : %d\n", cpuid);
-    printf("average cpu frequency: %d\n", average_cpufreq);
+    printf("average cpu frequency: %ld\n", average_cpufreq);
     printf("\n");
     return 0;
 }
@@ -401,7 +401,7 @@ void cpufreq_func(int argc, char *argv[])
 static uint64_t usec_start, usec_end;
 static struct xc_cx_stat *cxstat, *cxstat_start, *cxstat_end;
 static struct xc_px_stat *pxstat, *pxstat_start, *pxstat_end;
-static int *avgfreq;
+static uint64_t *avgfreq;
 static uint64_t *sum, *sum_cx, *sum_px;
 
 static void signal_int_handler(int signo)
@@ -501,7 +501,7 @@ static void signal_int_handler(int signo)
             }
         }
         if ( px_cap && avgfreq[i] )
-            printf("  Avg freq\t%d\tKHz\n", avgfreq[i]);
+            printf("  Avg freq\t%ld\tKHz\n", avgfreq[i]);
     }
 
     if ( cx_cap && !xc_cputopoinfo(xc_handle, &max_cpus, cputopo) )
