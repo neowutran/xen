@@ -1938,7 +1938,7 @@ struct xc_get_cpufreq_para {
 uint64_t xc_get_cpufreq_para(xc_interface *xch, int cpuid,
                         struct xc_get_cpufreq_para *user_para);
 int xc_set_cpufreq_gov(xc_interface *xch, int cpuid, char *govname);
-int xc_set_cpufreq_para(xc_interface *xch, int cpuid,
+uint64_t xc_set_cpufreq_para(xc_interface *xch, int cpuid,
                         int ctrl_type, uint64_t ctrl_value);
 uint64_t xc_get_cpufreq_avgfreq(xc_interface *xch, int cpuid, uint64_t *avg_freq);
 
