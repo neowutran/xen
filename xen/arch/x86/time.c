@@ -1375,6 +1375,7 @@ uint64_t tsc_ticks2ns(uint64_t ticks)
 
 static void __update_vcpu_system_time(struct vcpu *v, int force)
 {
+    printk("START __update_vcpu_system_time");
     const struct cpu_time *t;
     struct vcpu_time_info *u, _u = {};
     struct domain *d = v->domain;
@@ -1388,10 +1389,12 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
 
     if ( d->arch.vtsc )
     {
+        printk("__update_vcpu_system_time; d->arch.vtsc == true");
         s_time_t stime = t->stamp.local_stime;
 
         if ( is_hvm_domain(d) )
         {
+            printk("__update_vcpu_system_time; d->arch.vtsc == true -> HVM");
             struct pl_time *pl = v->domain->arch.hvm.pl_time;
 
             stime += pl->stime_offset + v->arch.hvm.stime_offset;
@@ -1400,22 +1403,28 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
             else
                 tsc_stamp = -gtime_to_gtsc(d, -stime);
         }
-        else
+        else{
             tsc_stamp = gtime_to_gtsc(d, stime);
+            printk("__update_vcpu_system_time; d->arch.vtsc == true -> PV");
+        }
 
         _u.tsc_to_system_mul = d->arch.vtsc_to_ns.mul_frac;
         _u.tsc_shift         = d->arch.vtsc_to_ns.shift;
+        printk("__update_vcpu_system_time; tsc_shift: %d ; tsc_to_system_mul: %d", d->arch.vtsc_to_ns.shift, d->arch.vtsc_to_ns.mul_frac);
     }
     else
     {
+        printk("__update_vcpu_system_time; d->arch.vtsc == false");
         if ( is_hvm_domain(d) && hvm_tsc_scaling_supported )
         {
+            printk("__update_vcpu_system_time; d->arch.vtsc == false ; HVM");
             tsc_stamp            = hvm_scale_tsc(d, t->stamp.local_tsc);
             _u.tsc_to_system_mul = d->arch.vtsc_to_ns.mul_frac;
             _u.tsc_shift         = d->arch.vtsc_to_ns.shift;
         }
         else
         {
+            printk("__update_vcpu_system_time; d->arch.vtsc == false ; no HVM");
             tsc_stamp            = t->stamp.local_tsc;
             _u.tsc_to_system_mul = t->tsc_scale.mul_frac;
             _u.tsc_shift         = t->tsc_scale.shift;
