@@ -564,7 +564,6 @@ static struct time_scale __read_mostly pmt_scale;
 
 static __init int cf_check init_pmtmr_scale(void)
 {
-    printk("INIT_PMTMR_SCALE: ticks_per_sec: %lu \n", ACPI_PM_FREQUENCY);
     set_time_scale(&pmt_scale, ACPI_PM_FREQUENCY);
     return 0;
 }
@@ -2607,7 +2606,7 @@ int tsc_set_info(struct domain *d,
     case TSC_MODE_ALWAYS_EMULATE:
         d->arch.vtsc_offset = get_s_time() - elapsed_nsec;
         d->arch.tsc_khz = gtsc_khz ?: cpu_khz;
-        printk("tsc_set_info: ticks_per_sec: %lu \n", d->arch.tsc_khz * 1000);
+        printk("tsc_set_info: ticks_per_sec: %lu \n", ((u64)d->arch.tsc_khz) * 1000);
         set_time_scale(&d->arch.vtsc_to_ns, d->arch.tsc_khz * 1000);
 
         /*
