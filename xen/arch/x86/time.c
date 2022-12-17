@@ -275,6 +275,7 @@ void set_time_scale(struct time_scale *ts, u64 ticks_per_sec)
 
     ts->mul_frac = div_frac(MILLISECS(1000), tps32);
     ts->shift    = shift;
+    printk("SET_TIME_SCALE: ts->mul_frac: %u ; ts->shift: %u ; ticks_per_sec: %lu \n", ts->mul_frac, ts->shift, ticks_per_sec);
 }
 
 static char *freq_string(u64 freq)
@@ -1379,7 +1380,7 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
     struct vcpu_time_info *u, _u = {};
     struct domain *d = v->domain;
     s_time_t tsc_stamp;
-    printk("START __update_vcpu_system_time");
+    //printk("START __update_vcpu_system_time");
 
     if ( v->vcpu_info == NULL )
         return;
@@ -1391,13 +1392,13 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
     {
         s_time_t stime = t->stamp.local_stime;
 
-        printk("__update_vcpu_system_time; d->arch.vtsc == true");
+        //printk("__update_vcpu_system_time; d->arch.vtsc == true");
 
         if ( is_hvm_domain(d) )
         {
             struct pl_time *pl = v->domain->arch.hvm.pl_time;
 
-            printk("__update_vcpu_system_time; d->arch.vtsc == true -> HVM");
+            //printk("__update_vcpu_system_time; d->arch.vtsc == true -> HVM");
 
             stime += pl->stime_offset + v->arch.hvm.stime_offset;
             if ( stime >= 0 )
@@ -1407,29 +1408,33 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
         }
         else{
             tsc_stamp = gtime_to_gtsc(d, stime);
-            printk("__update_vcpu_system_time; d->arch.vtsc == true -> PV");
+            //printk("__update_vcpu_system_time; d->arch.vtsc == true -> PV");
         }
 
         _u.tsc_to_system_mul = d->arch.vtsc_to_ns.mul_frac;
         _u.tsc_shift         = d->arch.vtsc_to_ns.shift;
-        printk("__update_vcpu_system_time; tsc_shift: %d ; tsc_to_system_mul: %d", d->arch.vtsc_to_ns.shift, d->arch.vtsc_to_ns.mul_frac);
+        printk("__update_vcpu_system_time; tsc_shift: %d ; tsc_to_system_mul: %d \n", d->arch.vtsc_to_ns.shift, d->arch.vtsc_to_ns.mul_frac);
     }
     else
     {
-        printk("__update_vcpu_system_time; d->arch.vtsc == false");
+        //printk("__update_vcpu_system_time; d->arch.vtsc == false");
         if ( is_hvm_domain(d) && hvm_tsc_scaling_supported )
         {
-            printk("__update_vcpu_system_time; d->arch.vtsc == false ; HVM");
             tsc_stamp            = hvm_scale_tsc(d, t->stamp.local_tsc);
             _u.tsc_to_system_mul = d->arch.vtsc_to_ns.mul_frac;
             _u.tsc_shift         = d->arch.vtsc_to_ns.shift;
-        }
-        else
-        {
-            printk("__update_vcpu_system_time; d->arch.vtsc == false ; no HVM");
+            
             tsc_stamp            = t->stamp.local_tsc;
             _u.tsc_to_system_mul = t->tsc_scale.mul_frac;
             _u.tsc_shift         = t->tsc_scale.shift;
+            printk("__update_vcpu_system_time; d->arch.vtsc == false; HVM tsc_shift: %d ; tsc_to_system_mul: %d \n", d->arch.vtsc_to_ns.shift, d->arch.vtsc_to_ns.mul_frac);
+        }
+        else
+        {
+            tsc_stamp            = t->stamp.local_tsc;
+            _u.tsc_to_system_mul = t->tsc_scale.mul_frac;
+            _u.tsc_shift         = t->tsc_scale.shift;
+            printk("__update_vcpu_system_time; d->arch.vtsc == false; NO HVM tsc_shift: %d ; tsc_to_system_mul: %d \n", t->tsc_scale.shift, t->tsc_scale.mul_frac);
         }
     }
 
@@ -1696,6 +1701,7 @@ static void cf_check local_time_calibration(void)
     local_irq_disable();
     t->tsc_scale.mul_frac = calibration_mul_frac;
     t->tsc_scale.shift    = tsc_shift;
+    printk("LOCAL TIME CALIBRATION. mul_frac %u ; shift %u\n", calibration_mul_frac, tsc_shift );
     t->stamp              = curr;
     local_irq_enable();
 
