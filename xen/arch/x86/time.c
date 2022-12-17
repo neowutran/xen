@@ -1375,11 +1375,11 @@ uint64_t tsc_ticks2ns(uint64_t ticks)
 
 static void __update_vcpu_system_time(struct vcpu *v, int force)
 {
-    printk("START __update_vcpu_system_time");
     const struct cpu_time *t;
     struct vcpu_time_info *u, _u = {};
     struct domain *d = v->domain;
     s_time_t tsc_stamp;
+    printk("START __update_vcpu_system_time");
 
     if ( v->vcpu_info == NULL )
         return;
@@ -1389,13 +1389,15 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
 
     if ( d->arch.vtsc )
     {
-        printk("__update_vcpu_system_time; d->arch.vtsc == true");
         s_time_t stime = t->stamp.local_stime;
+
+        printk("__update_vcpu_system_time; d->arch.vtsc == true");
 
         if ( is_hvm_domain(d) )
         {
-            printk("__update_vcpu_system_time; d->arch.vtsc == true -> HVM");
             struct pl_time *pl = v->domain->arch.hvm.pl_time;
+
+            printk("__update_vcpu_system_time; d->arch.vtsc == true -> HVM");
 
             stime += pl->stime_offset + v->arch.hvm.stime_offset;
             if ( stime >= 0 )
