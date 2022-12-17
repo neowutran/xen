@@ -564,6 +564,7 @@ static struct time_scale __read_mostly pmt_scale;
 
 static __init int cf_check init_pmtmr_scale(void)
 {
+    printk("INIT_PMTMR_SCALE: ticks_per_sec: %lu \n", ACPI_PM_FREQUENCY);
     set_time_scale(&pmt_scale, ACPI_PM_FREQUENCY);
     return 0;
 }
@@ -959,6 +960,7 @@ static s64 __init try_platform_timer(struct platform_timesource *pts)
 
     plt_mask = (u64)~0ull >> (64 - pts->counter_bits);
 
+    printk("try_platform_timer: ticks_per_sec: %lu \n", pts->frequency);
     set_time_scale(&plt_scale, pts->frequency);
 
     plt_overflow_period = scale_delta(
@@ -1434,7 +1436,8 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
             tsc_stamp            = t->stamp.local_tsc;
             _u.tsc_to_system_mul = t->tsc_scale.mul_frac;
             _u.tsc_shift         = t->tsc_scale.shift;
-            printk("__update_vcpu_system_time; d->arch.vtsc == false; NO HVM tsc_shift: %d ; tsc_to_system_mul: %d \n", t->tsc_scale.shift, t->tsc_scale.mul_frac);
+            // ISSUE IS NOT HERE
+            //printk("__update_vcpu_system_time; d->arch.vtsc == false; NO HVM tsc_shift: %d ; tsc_to_system_mul: %d \n", t->tsc_scale.shift, t->tsc_scale.mul_frac);
         }
     }
 
@@ -1554,6 +1557,7 @@ int cpu_frequency_change(u64 freq)
     /*t->stamp.local_stime = get_s_time_fixed(curr_tsc);*/
     t->stamp.local_stime = t->stamp.master_stime;
     t->stamp.local_tsc = curr_tsc;
+    printk("cpu_frequency_change: ticks_per_sec: %lu \n", freq);
     set_time_scale(&t->tsc_scale, freq);
     local_irq_enable();
 
@@ -2294,6 +2298,7 @@ void __init early_time_init(void)
     tmp = init_platform_timer();
     plt_tsc.frequency = tmp;
 
+    printk("early_time_init: ticks_per_sec: %lu \n", tmp);
     set_time_scale(&t->tsc_scale, tmp);
     t->stamp.local_tsc = boot_tsc_stamp;
 
@@ -2602,6 +2607,7 @@ int tsc_set_info(struct domain *d,
     case TSC_MODE_ALWAYS_EMULATE:
         d->arch.vtsc_offset = get_s_time() - elapsed_nsec;
         d->arch.tsc_khz = gtsc_khz ?: cpu_khz;
+        printk("tsc_set_info: ticks_per_sec: %lu \n", d->arch.tsc_khz * 1000);
         set_time_scale(&d->arch.vtsc_to_ns, d->arch.tsc_khz * 1000);
 
         /*
