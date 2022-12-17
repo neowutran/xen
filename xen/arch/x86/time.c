@@ -2608,7 +2608,7 @@ int tsc_set_info(struct domain *d,
         d->arch.vtsc_offset = get_s_time() - elapsed_nsec;
         d->arch.tsc_khz = gtsc_khz ?: cpu_khz;
         fucking_integer_overflow = ((u64)d->arch.tsc_khz) * 1000;
-        printk("tsc_set_info: ticks_per_sec: %lu \n", fucking_integer_overflow;
+        printk("tsc_set_info: ticks_per_sec: %lu \n", fucking_integer_overflow);
         
         set_time_scale(&d->arch.vtsc_to_ns, fucking_integer_overflow);
 
