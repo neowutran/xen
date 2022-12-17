@@ -1425,9 +1425,9 @@ static void __update_vcpu_system_time(struct vcpu *v, int force)
             _u.tsc_to_system_mul = d->arch.vtsc_to_ns.mul_frac;
             _u.tsc_shift         = d->arch.vtsc_to_ns.shift;
             
-            tsc_stamp            = t->stamp.local_tsc;
-            _u.tsc_to_system_mul = t->tsc_scale.mul_frac;
-            _u.tsc_shift         = t->tsc_scale.shift;
+            //tsc_stamp            = t->stamp.local_tsc;
+            //_u.tsc_to_system_mul = t->tsc_scale.mul_frac;
+            //_u.tsc_shift         = t->tsc_scale.shift;
             printk("__update_vcpu_system_time; d->arch.vtsc == false; HVM tsc_shift: %d ; tsc_to_system_mul: %d \n", d->arch.vtsc_to_ns.shift, d->arch.vtsc_to_ns.mul_frac);
         }
         else
@@ -2592,6 +2592,7 @@ int tsc_set_info(struct domain *d,
                  uint32_t tsc_mode, uint64_t elapsed_nsec,
                  uint32_t gtsc_khz, uint32_t incarnation)
 {
+    uint64_t fucking_integer_overflow;
     ASSERT(!is_system_domain(d));
 
     if ( is_pv_domain(d) && is_hardware_domain(d) )
@@ -2606,8 +2607,10 @@ int tsc_set_info(struct domain *d,
     case TSC_MODE_ALWAYS_EMULATE:
         d->arch.vtsc_offset = get_s_time() - elapsed_nsec;
         d->arch.tsc_khz = gtsc_khz ?: cpu_khz;
-        printk("tsc_set_info: ticks_per_sec: %lu \n", ((u64)d->arch.tsc_khz) * 1000);
-        set_time_scale(&d->arch.vtsc_to_ns, d->arch.tsc_khz * 1000);
+        fucking_integer_overflow = ((u64)d->arch.tsc_khz) * 1000;
+        printk("tsc_set_info: ticks_per_sec: %lu \n", fucking_integer_overflow;
+        
+        set_time_scale(&d->arch.vtsc_to_ns, fucking_integer_overflow);
 
         /*
          * In default mode use native TSC if the host has safe TSC and
