@@ -601,11 +601,14 @@ static size_t __init get_esrt_size(const EFI_MEMORY_DESCRIPTOR *desc)
     if ( physical_start > esrt || esrt - physical_start >= len )
         return 0;
     /*
-     * The specification requires EfiBootServicesData, but accept
-     * EfiRuntimeServicesData, which is a more logical choice.
+     * The specification requires EfiBootServicesData, but also accept
+     * EfiRuntimeServicesData (for compatibility with buggy firmware)
+     * and EfiACPIReclaimMemory (which will contain the tables after
+     * successful kexec).
      */
     if ( (desc->Type != EfiRuntimeServicesData) &&
-         (desc->Type != EfiBootServicesData) )
+         (desc->Type != EfiBootServicesData) &&
+         (desc->Type != EfiACPIReclaimMemory) )
         return 0;
     available_len = len - (esrt - physical_start);
     if ( available_len <= offsetof(EFI_SYSTEM_RESOURCE_TABLE, Entries) )
@@ -620,6 +623,74 @@ static size_t __init get_esrt_size(const EFI_MEMORY_DESCRIPTOR *desc)
         return 0;
 
     return esrt_ptr->FwResourceCount * sizeof(esrt_ptr->Entries[0]);
+}
+
+static EFI_GUID __initdata esrt_guid = EFI_SYSTEM_RESOURCE_TABLE_GUID;
+
+static void __init efi_relocate_esrt(EFI_SYSTEM_TABLE *SystemTable)
+{
+    EFI_STATUS status;
+    UINTN info_size = 0, map_key, mdesc_size;
+    void *memory_map = NULL;
+    UINT32 ver;
+    unsigned int i;
+
+    for ( ; ; )
+    {
+        status = efi_bs->GetMemoryMap(&info_size, memory_map, &map_key,
+                                      &mdesc_size, &ver);
+        if ( status == EFI_SUCCESS && memory_map != NULL )
+            break;
+        if ( status == EFI_BUFFER_TOO_SMALL || memory_map == NULL )
+        {
+            info_size += 8 * mdesc_size;
+            if ( memory_map != NULL )
+                efi_bs->FreePool(memory_map);
+            memory_map = NULL;
+            status = efi_bs->AllocatePool(EfiLoaderData, info_size, &memory_map);
+            if ( status == EFI_SUCCESS )
+                continue;
+            PrintErr(L"Cannot allocate memory to relocate ESRT\r\n");
+        }
+        else
+            PrintErr(L"Cannot obtain memory map to relocate ESRT\r\n");
+        return;
+    }
+
+    /* Try to obtain the ESRT.  Errors are not fatal. */
+    for ( i = 0; i < info_size; i += mdesc_size )
+    {
+        /*
+         * ESRT needs to be moved to memory of type EfiACPIReclaimMemory
+         * so that the memory it is in will not be used for other purposes.
+         */
+        void *new_esrt = NULL;
+        const EFI_MEMORY_DESCRIPTOR *desc = memory_map + i;
+        size_t esrt_size = get_esrt_size(desc);
+
+        if ( !esrt_size )
+            continue;
+        if ( desc->Type == EfiRuntimeServicesData ||
+             desc->Type == EfiACPIReclaimMemory )
+            break; /* ESRT already safe from reuse */
+        status = efi_bs->AllocatePool(EfiACPIReclaimMemory, esrt_size,
+                                      &new_esrt);
+        if ( status == EFI_SUCCESS && new_esrt )
+        {
+            memcpy(new_esrt, (void *)esrt, esrt_size);
+            status = efi_bs->InstallConfigurationTable(&esrt_guid, new_esrt);
+            if ( status != EFI_SUCCESS )
+            {
+                PrintErr(L"Cannot install new ESRT\r\n");
+                efi_bs->FreePool(new_esrt);
+            }
+        }
+        else
+            PrintErr(L"Cannot allocate memory for ESRT\r\n");
+        break;
+    }
+
+    efi_bs->FreePool(memory_map);
 }
 
 /*
@@ -900,8 +971,6 @@ static UINTN __init efi_find_gop_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop,
     return gop_mode;
 }
 
-static EFI_GUID __initdata esrt_guid = EFI_SYSTEM_RESOURCE_TABLE_GUID;
-
 static void __init efi_tables(void)
 {
     unsigned int i;
@@ -1109,71 +1178,6 @@ static void __init efi_set_gop_mode(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop, UINTN gop
 
 #define INVALID_VIRTUAL_ADDRESS (0xBAAADUL << \
                                  (EFI_PAGE_SHIFT + BITS_PER_LONG - 32))
-
-static void __init efi_relocate_esrt(EFI_SYSTEM_TABLE *SystemTable)
-{
-    EFI_STATUS status;
-    UINTN info_size = 0, map_key, mdesc_size;
-    void *memory_map = NULL;
-    UINT32 ver;
-    unsigned int i;
-
-    for ( ; ; )
-    {
-        status = efi_bs->GetMemoryMap(&info_size, memory_map, &map_key,
-                                      &mdesc_size, &ver);
-        if ( status == EFI_SUCCESS && memory_map != NULL )
-            break;
-        if ( status == EFI_BUFFER_TOO_SMALL || memory_map == NULL )
-        {
-            info_size += 8 * mdesc_size;
-            if ( memory_map != NULL )
-                efi_bs->FreePool(memory_map);
-            memory_map = NULL;
-            status = efi_bs->AllocatePool(EfiLoaderData, info_size, &memory_map);
-            if ( status == EFI_SUCCESS )
-                continue;
-            PrintErr(L"Cannot allocate memory to relocate ESRT\r\n");
-        }
-        else
-            PrintErr(L"Cannot obtain memory map to relocate ESRT\r\n");
-        return;
-    }
-
-    /* Try to obtain the ESRT.  Errors are not fatal. */
-    for ( i = 0; i < info_size; i += mdesc_size )
-    {
-        /*
-         * ESRT needs to be moved to memory of type EfiRuntimeServicesData
-         * so that the memory it is in will not be used for other purposes.
-         */
-        void *new_esrt = NULL;
-        size_t esrt_size = get_esrt_size(memory_map + i);
-
-        if ( !esrt_size )
-            continue;
-        if ( ((EFI_MEMORY_DESCRIPTOR *)(memory_map + i))->Type ==
-             EfiRuntimeServicesData )
-            break; /* ESRT already safe from reuse */
-        status = efi_bs->AllocatePool(EfiRuntimeServicesData, esrt_size,
-                                      &new_esrt);
-        if ( status == EFI_SUCCESS && new_esrt )
-        {
-            memcpy(new_esrt, (void *)esrt, esrt_size);
-            status = efi_bs->InstallConfigurationTable(&esrt_guid, new_esrt);
-            if ( status != EFI_SUCCESS )
-            {
-                PrintErr(L"Cannot install new ESRT\r\n");
-                efi_bs->FreePool(new_esrt);
-            }
-        }
-        else
-            PrintErr(L"Cannot allocate memory for ESRT\r\n");
-        break;
-    }
-
-    efi_bs->FreePool(memory_map);
-}
 
 static void __init efi_exit_boot(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -1720,23 +1724,23 @@ void __init efi_init_memory(void)
         emfn = PFN_UP(desc->PhysicalStart + len);
 
         if ( desc->Attribute & EFI_MEMORY_WB )
-            /* nothing */;
+            prot |= _PAGE_WB;
         else if ( desc->Attribute & EFI_MEMORY_WT )
-            prot |= _PAGE_PWT | MAP_SMALL_PAGES;
+            prot |= _PAGE_WT | MAP_SMALL_PAGES;
         else if ( desc->Attribute & EFI_MEMORY_WC )
-            prot |= _PAGE_PAT | MAP_SMALL_PAGES;
+            prot |= _PAGE_WC | MAP_SMALL_PAGES;
         else if ( desc->Attribute & (EFI_MEMORY_UC | EFI_MEMORY_UCE) )
-            prot |= _PAGE_PWT | _PAGE_PCD | MAP_SMALL_PAGES;
+            prot |= _PAGE_UC | MAP_SMALL_PAGES;
         else if ( efi_bs_revision >= EFI_REVISION(2, 5) &&
                   (desc->Attribute & EFI_MEMORY_WP) )
-            prot |= _PAGE_PAT | _PAGE_PWT | MAP_SMALL_PAGES;
+            prot |= _PAGE_WP | MAP_SMALL_PAGES;
         else
         {
             printk(XENLOG_ERR "Unknown cachability for MFNs %#lx-%#lx%s\n",
                    smfn, emfn - 1, efi_map_uc ? ", assuming UC" : "");
             if ( !efi_map_uc )
                 continue;
-            prot |= _PAGE_PWT | _PAGE_PCD | MAP_SMALL_PAGES;
+            prot |= _PAGE_UC | MAP_SMALL_PAGES;
         }
 
         if ( desc->Attribute & (efi_bs_revision < EFI_REVISION(2, 5)

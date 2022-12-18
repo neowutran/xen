@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * xen/arch/arm/mm.c
  *
@@ -5,16 +6,6 @@
  *
  * Tim Deegan <tim@xen.org>
  * Copyright (c) 2011 Citrix Systems.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <xen/domain_page.h>
@@ -186,6 +177,30 @@ static void __init __maybe_unused build_assertions(void)
 #undef CHECK_SAME_SLOT
 }
 
+static lpae_t *xen_map_table(mfn_t mfn)
+{
+    /*
+     * During early boot, map_domain_page() may be unusable. Use the
+     * PMAP to map temporarily a page-table.
+     */
+    if ( system_state == SYS_STATE_early_boot )
+        return pmap_map(mfn);
+
+    return map_domain_page(mfn);
+}
+
+static void xen_unmap_table(const lpae_t *table)
+{
+    /*
+     * During early boot, xen_map_table() will not use map_domain_page()
+     * but the PMAP.
+     */
+    if ( system_state == SYS_STATE_early_boot )
+        pmap_unmap(table);
+    else
+        unmap_domain_page(table);
+}
+
 void dump_pt_walk(paddr_t ttbr, paddr_t addr,
                   unsigned int root_level,
                   unsigned int nr_root_tables)
@@ -225,7 +240,7 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
     else
         root_table = 0;
 
-    mapping = map_domain_page(mfn_add(root_mfn, root_table));
+    mapping = xen_map_table(mfn_add(root_mfn, root_table));
 
     for ( level = root_level; ; level++ )
     {
@@ -241,23 +256,21 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
             break;
 
         /* For next iteration */
-        unmap_domain_page(mapping);
-        mapping = map_domain_page(lpae_get_mfn(pte));
+        xen_unmap_table(mapping);
+        mapping = xen_map_table(lpae_get_mfn(pte));
     }
 
-    unmap_domain_page(mapping);
+    xen_unmap_table(mapping);
 }
 
 void dump_hyp_walk(vaddr_t addr)
 {
     uint64_t ttbr = READ_SYSREG64(TTBR0_EL2);
-    lpae_t *pgtable = THIS_CPU_PGTABLE;
 
     printk("Walking Hypervisor VA 0x%"PRIvaddr" "
            "on CPU%d via TTBR 0x%016"PRIx64"\n",
            addr, smp_processor_id(), ttbr);
 
-    BUG_ON( virt_to_maddr(pgtable) != ttbr );
     dump_pt_walk(ttbr, addr, HYP_PT_ROOT_LEVEL, 1);
 }
 
@@ -708,30 +721,6 @@ void *ioremap(paddr_t pa, size_t len)
     return ioremap_attr(pa, len, PAGE_HYPERVISOR_NOCACHE);
 }
 
-static lpae_t *xen_map_table(mfn_t mfn)
-{
-    /*
-     * During early boot, map_domain_page() may be unusable. Use the
-     * PMAP to map temporarily a page-table.
-     */
-    if ( system_state == SYS_STATE_early_boot )
-        return pmap_map(mfn);
-
-    return map_domain_page(mfn);
-}
-
-static void xen_unmap_table(const lpae_t *table)
-{
-    /*
-     * During early boot, xen_map_table() will not use map_domain_page()
-     * but the PMAP.
-     */
-    if ( system_state == SYS_STATE_early_boot )
-        pmap_unmap(table);
-    else
-        unmap_domain_page(table);
-}
-
 static int create_xen_table(lpae_t *entry)
 {
     mfn_t mfn;
@@ -1108,7 +1097,7 @@ static int xen_pt_update(unsigned long virt,
      *
      * XXX: Add a check.
      */
-    const mfn_t root = virt_to_mfn(THIS_CPU_PGTABLE);
+    const mfn_t root = maddr_to_mfn(READ_SYSREG64(TTBR0_EL2));
 
     /*
      * The hardware was configured to forbid mapping both writeable and

@@ -2347,6 +2347,7 @@ static void tdb_logger(TDB_CONTEXT *tdb, int level, const char * fmt, ...)
 {
 	va_list ap;
 	char *s;
+	int saved_errno = errno;
 
 	va_start(ap, fmt);
 	s = talloc_vasprintf(NULL, fmt, ap);
@@ -2362,6 +2363,8 @@ static void tdb_logger(TDB_CONTEXT *tdb, int level, const char * fmt, ...)
 		trace("talloc failure during logging\n");
 		syslog(LOG_ERR, "talloc failure during logging\n");
 	}
+
+	errno = saved_errno;
 }
 
 void setup_structure(bool live_update)
@@ -2511,7 +2514,9 @@ void check_store(void)
 		.enoent = check_store_enoent,
 	};
 
-	reachable = create_hashtable(16, hash_from_key_fn, keys_equal_fn);
+	/* Don't free values (they are all void *1) */
+	reachable = create_hashtable(16, hash_from_key_fn, keys_equal_fn,
+				     HASHTABLE_FREE_KEY);
 	if (!reachable) {
 		log("check_store: ENOMEM");
 		return;
@@ -2525,8 +2530,7 @@ void check_store(void)
 		clean_store(reachable);
 	log("Checking store complete.");
 
-	hashtable_destroy(reachable, 0 /* Don't free values (they are all
-					  (void *)1) */);
+	hashtable_destroy(reachable);
 }
 
 
@@ -2548,6 +2552,8 @@ void corrupt(struct connection *conn, const char *fmt, ...)
 	talloc_free(str);
 
 	check_store();
+
+	errno = saved_errno;
 }
 
 #ifndef NO_SOCKETS

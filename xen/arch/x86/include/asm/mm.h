@@ -70,9 +70,9 @@
  /* Page is Xen heap? */
 #define _PGC_xen_heap     PG_shift(2)
 #define PGC_xen_heap      PG_mask(1, 2)
- /* Set when is using a page as a page table */
-#define _PGC_page_table   PG_shift(3)
-#define PGC_page_table    PG_mask(1, 3)
+ /* Page is not reference counted */
+#define _PGC_extra        PG_shift(3)
+#define PGC_extra         PG_mask(1, 3)
  /* Page is broken? */
 #define _PGC_broken       PG_shift(4)
 #define PGC_broken        PG_mask(1, 4)
@@ -83,12 +83,20 @@
 #define PGC_state_offlined  PG_mask(2, 6)
 #define PGC_state_free      PG_mask(3, 6)
 #define page_state_is(pg, st) (((pg)->count_info&PGC_state) == PGC_state_##st)
-/* Page is not reference counted */
-#define _PGC_extra        PG_shift(7)
-#define PGC_extra         PG_mask(1, 7)
+#ifdef CONFIG_SHADOW_PAGING
+ /* Set when a page table page has been shadowed. */
+#define _PGC_shadowed_pt  PG_shift(7)
+#define PGC_shadowed_pt   PG_mask(1, 7)
+#else
+#define PGC_shadowed_pt   0
+#endif
 
 /* Count of references to this frame. */
+#if PGC_shadowed_pt
 #define PGC_count_width   PG_shift(7)
+#else
+#define PGC_count_width   PG_shift(6)
+#endif
 #define PGC_count_mask    ((1UL<<PGC_count_width)-1)
 
 /*
@@ -455,8 +463,6 @@ static inline int get_page_and_type(struct page_info *page,
 #define ASSERT_PAGE_IS_DOMAIN(_p, _d)                          \
     ASSERT(((_p)->count_info & PGC_count_mask) != 0);          \
     ASSERT(page_get_owner(_p) == (_d))
-
-extern paddr_t mem_hotplug;
 
 /******************************************************************************
  * With shadow pagetables, the different kinds of address start
